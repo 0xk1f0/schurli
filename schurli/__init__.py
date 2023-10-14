@@ -4,7 +4,7 @@ from schurli.src.bot import bot
 
 # Load the config.toml and version file
 VERSION = toml.load("pyproject.toml")["tool"]["poetry"]["version"]
-CFG_PATH = getenv("CONF_PATH") or "/var/lib/powerBot/config"
+CFG_PATH = getenv("CONF_PATH") or "/var/lib/schurli/config"
 CONFIG = toml.load(path.join(CFG_PATH, "config.toml"))
 
 

@@ -8,9 +8,9 @@ from schurli.src.helpers import access_check
 from schurli.src.cleaner import Vacuum
 
 # Set config path
-CFG_PATH = os.getenv("CONF_PATH") or "/var/lib/powerBot/config"
+CFG_PATH = os.getenv("CONF_PATH") or "/var/lib/schurli/config"
 # Data path for cache
-DATA_PATH = os.getenv("DATA_PATH") or "/var/lib/powerBot/data"
+DATA_PATH = os.getenv("DATA_PATH") or "/var/lib/schurli/data"
 # cleaner
 CLEANER = Vacuum()
 
