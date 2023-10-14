@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "schurli"
+version = "0.1.0"
+description = ""
+authors = ["0xk1f0 <fteppan@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+"discord.py" = "^2.3.2"
+toml = "^0.10.2"
+
+[tool.poetry.scripts]
+dev = "schurli:main"
+dist = "schurli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

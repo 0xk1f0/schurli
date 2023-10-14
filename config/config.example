@@ -1,0 +1,22 @@
+[general]
+err = "****hits wall****"
+status = "Vacuuming"
+message_limit = 100
+admins = [ 
+    1234
+]
+
+[discord]
+bot_token = ""
+
+[sounds]
+list = [ 
+    "***Vrrrrrrrrrrrrrrr***",
+    "***Hssssssssssss***",
+    "***Whirrrrrrrrrrrrr***",
+    "***Fwoooooooooosh***",
+    "***Vrrrrrrrrr... Hssssssssss... Whirrrrrrr...***"
+]
+
+[channels]
+list = []
