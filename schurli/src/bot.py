@@ -90,7 +90,7 @@ async def on_message(message):
 async def add_trigger(ctx: discord.Interaction, channel_id: str):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["admins"], True)
-    if not HAS_ACCESS:
+    if HAS_ACCESS != True:
         await ctx.response.send_message(HAS_ACCESS)
         return
     else:
@@ -114,7 +114,7 @@ async def add_trigger(ctx: discord.Interaction, channel_id: str):
 async def remove_trigger(ctx: discord.Interaction, channel_id: str):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["admins"], True)
-    if not HAS_ACCESS:
+    if HAS_ACCESS != True:
         await ctx.response.send_message(HAS_ACCESS)
         return
     else:

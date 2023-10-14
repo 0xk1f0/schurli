@@ -9,7 +9,6 @@ class Vacuum:
         # taking action
         PROBABILITY = 1 / 10
         random_number = random.random()
-        print(f"{PROBABILITY} to {random_number}")
         # check if we clean
         if random_number <= PROBABILITY:
             return True
