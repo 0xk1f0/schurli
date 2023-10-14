@@ -57,7 +57,7 @@ async def daily_ticker():
     await bot.wait_until_ready()
     if CLEANER.cleaning_probability() and len(CHANNELS) > 0 and len(SOUNDS) > 0:
         ACTION = CLEANER.generate_vacuum_channel(CHANNELS, SOUNDS)
-        if CLEANER.needs_cleaning(ACTION[0], 5):
+        if CLEANER.needs_cleaning(ACTION[0], CFG["general"]["activity_limit"]):
             CHANNEL = await bot.fetch_channel(ACTION[0])
             HISTORY = await CHANNEL.history(limit=1)
             await CHANNEL.delete_messages(HISTORY)

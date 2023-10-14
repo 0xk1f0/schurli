@@ -2,6 +2,7 @@
 err = "****hits wall****"
 status = "Vacuuming"
 message_limit = 100
+activity_limit = 5
 admins = [ 
     1234
 ]
