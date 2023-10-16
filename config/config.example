@@ -3,8 +3,12 @@ err = "****hits wall****"
 status = "Vacuuming"
 message_limit = 100
 activity_limit = 5
-admins = [ 
-    1234
+decay_factor = 2.0
+superadmins = [ 
+    1234,
+]
+blocked = [
+    1234,
 ]
 
 [discord]

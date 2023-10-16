@@ -5,19 +5,35 @@ class Vacuum:
     def __init__(self) -> None:
         self.message_db = {}
 
-    def cleaning_probability(self, msg_count: int, upper: int, lower: int):
-        # random number above activity limit
-        random_number = random.randint(lower, upper)
-        # check if we clean
-        if random_number == msg_count or msg_count > upper:
+    def cleaning_probability(
+        self, factor: float, msg_count: int, lower: int, upper: int
+    ):
+        # proximity to the upper limit as a value between 0 and 1
+        proximity = 1.0 - (msg_count - lower) / (upper - lower)
+        decay_factor = factor
+
+        # weighted probability using an exponential decay function
+        weighted_probability = (1 - proximity) ** decay_factor
+        random_number = random.random()
+
+        print(weighted_probability, random_number)
+        # weighted probability exceeds the random number or count bigger than limit
+        if weighted_probability > random_number or msg_count > upper:
             return True
         else:
             return False
 
-    def needs_cleaning(self, channel_id, activity_limit: int, message_limit: int):
+    def needs_cleaning(
+        self, channel_id, activity_limit: int, message_limit: int, factor: float
+    ):
         if self.message_db.get(channel_id) != None:
             if self.message_db.get(channel_id) >= activity_limit:
-                if self.cleaning_probability(self.message_db.get(channel_id), message_limit, activity_limit):
+                if self.cleaning_probability(
+                    factor,
+                    self.message_db.get(channel_id),
+                    activity_limit,
+                    message_limit,
+                ):
                     self.message_db[channel_id] = 0
                     return True
             self.message_db[channel_id] += 1
