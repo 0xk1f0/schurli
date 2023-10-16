@@ -5,23 +5,22 @@ class Vacuum:
     def __init__(self) -> None:
         self.message_db = {}
 
-    def cleaning_probability(self):
-        # taking action
-        PROBABILITY = 1 / 10
-        random_number = random.random()
+    def cleaning_probability(self, msg_count: int, upper: int, lower: int):
+        # random number above activity limit
+        random_number = random.randint(lower, upper)
         # check if we clean
-        if random_number <= PROBABILITY:
+        if random_number == msg_count or msg_count > upper:
             return True
         else:
             return False
 
-    def needs_cleaning(self, channel_id: str, message_limit: int):
-        if channel_id in self.message_db:
-            if self.message_db[channel_id] < message_limit:
-                self.message_db[channel_id] += 1
-            else:
-                self.message_db[channel_id] = 0
-                return True
+    def needs_cleaning(self, channel_id, activity_limit: int, message_limit: int):
+        if self.message_db.get(channel_id) != None:
+            if self.message_db.get(channel_id) >= activity_limit:
+                if self.cleaning_probability(self.message_db.get(channel_id), message_limit, activity_limit):
+                    self.message_db[channel_id] = 0
+                    return True
+            self.message_db[channel_id] += 1
         else:
             self.message_db[channel_id] = 1
 
