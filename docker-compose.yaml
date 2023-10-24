@@ -4,7 +4,6 @@ services:
     image: ghcr.io/0xk1f0/schurli:master
     volumes:
       - ./config:/var/lib/schurli/config
-      - ./data:/var/lib/schurli/data
     environment:
       TZ: 'Europe/Vienna'
     restart: unless-stopped

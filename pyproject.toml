@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "schurli"
-version = "0.1.0"
-description = ""
-authors = ["0xk1f0 <fteppan@protonmail.com>"]
+version = "0.1.1"
+description = "It keeps your channels clean O.o"
+authors = ["0xk1f0"]
 readme = "README.md"
+
+[tool.version]
+codename = "dyson"
 
 [tool.poetry.dependencies]
 python = "^3.11"

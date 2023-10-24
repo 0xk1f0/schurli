@@ -11,8 +11,6 @@ from schurli.src.cleaner import Vacuum
 
 # Set config path
 CFG_PATH = os.getenv("CONF_PATH") or "/var/lib/schurli/config"
-# Data path for cache
-DATA_PATH = os.getenv("DATA_PATH") or "/var/lib/schurli/data"
 # cleaner
 CLEANER = Vacuum()
 
@@ -72,23 +70,55 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-### WHERE TO CLEAN ###
+### MASS CLEAN ###
 
 
-@bot.tree.command(name="clean", description="Clean this Channel")
-@app_commands.describe(channel_id="ID of the Channel")
-async def add_trigger(ctx: discord.Interaction, channel_id: str):
+@bot.tree.command(name="massvacuum", description="Vacuum previous x Messages")
+@app_commands.describe(count="Number of Messages to Purge")
+async def purge_hist(ctx: discord.Interaction, count: int):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
     if HAS_ACCESS != True:
         if not ctx.user.guild_permissions.administrator:
             await ctx.response.send_message(HAS_ACCESS)
             return
-    for channel in CFG["channels"]["list"]:
-        if channel_id == channel:
+    try:
+        # get the history after message id
+        HISTORY = [
+            message async for message in ctx.channel.history(limit=count)
+        ]
+        # delete it
+        if HISTORY and len(HISTORY) > 0:
+            await ctx.response.defer()
+            await ctx.channel.delete_messages(HISTORY)
+        else:
+            await ctx.response.send_message("***Mh?***")
+    except:
+        await ctx.followup.send(f"{CFG['general']['err']}")
+    finally:
+        await ctx.followup.send(f"***MMMMMMMMMmmmmmmmmmmmmHHHHHHHHhhhhhhh***: {len(HISTORY)}")
+
+
+### WHERE TO CLEAN ###
+
+
+@bot.tree.command(name="clean", description="Clean this Channel")
+@app_commands.describe(channel="ID of the Channel")
+async def add_trigger(ctx: discord.Interaction, channel: str):
+    CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
+    HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
+    if HAS_ACCESS != True:
+        if not ctx.user.guild_permissions.administrator:
+            await ctx.response.send_message(HAS_ACCESS)
+            return
+    # convert to normal id
+    channel_id = int(re.search(r"\d+", channel).group())
+
+    for entry in CFG["channels"]["list"]:
+        if channel_id == entry:
             # word exists
             await ctx.response.send_message(
-                f'I am already cleaning Channel: "{channel_id}"!'
+                f'I am already cleaning Channel: <#{channel_id}>!'
             )
             return
     CFG["channels"]["list"].append(channel_id)
@@ -96,30 +126,36 @@ async def add_trigger(ctx: discord.Interaction, channel_id: str):
     with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
         toml.dump(CFG, f)
 
-    await ctx.response.send_message(f'I will clean Channel: "{channel_id}"!')
+    await ctx.response.send_message(f'I will clean Channel: <#{channel_id}>!')
 
 
 @bot.tree.command(name="noclean", description="Stop cleaning this Channel")
-@app_commands.describe(channel_id="ID of the Channel")
-async def remove_trigger(ctx: discord.Interaction, channel_id: str):
+@app_commands.describe(channel="ID of the Channel")
+async def remove_trigger(ctx: discord.Interaction, channel: str):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
     if HAS_ACCESS != True:
         if not ctx.user.guild_permissions.administrator:
             await ctx.response.send_message(HAS_ACCESS)
             return
-    for channel in CFG["channels"]["list"]:
-        if channel_id == channel:
+    # convert to normal id
+    channel_id = int(re.search(r"\d+", channel).group())
+
+    for entry in CFG["channels"]["list"]:
+        if channel_id == entry:
             CFG["channels"]["list"].remove(channel_id)
             # write back to list
             with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
                 toml.dump(CFG, f)
             await ctx.response.send_message(
-                f'I will no longer clean Channel: "{channel_id}"!'
+                f'I will no longer clean Channel: <#{channel_id}>!'
             )
             return
     # word doesnt exist
-    await ctx.response.send_message(f'I do not clean Channel "{channel_id}" currently!')
+    await ctx.response.send_message(f'I do not clean Channel <#{channel_id}> currently!')
+
+
+### CONSTANT USER VACUUMING ###
 
 
 @bot.tree.command(name="vacuum", description="Vacuum a user away")
@@ -138,14 +174,14 @@ async def block(ctx: discord.Interaction, user: str):
     if not user_id in CFG["general"]["blocked"]:
         CFG["general"]["blocked"].append(user_id)
     else:
-        await ctx.response.send_message(f"{user} already being vacuum'd!")
+        await ctx.response.send_message(f"<@{user_id}> already being vacuum'd!")
         return
 
     # write back to list
     with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
         toml.dump(CFG, f)
 
-    await ctx.response.send_message(f"Vacuuming {user}!")
+    await ctx.response.send_message(f"Vacuuming <@{user_id}>!")
 
 
 @bot.tree.command(name="unvacuum", description="Don't vacuum a user")
@@ -163,10 +199,21 @@ async def unblock(ctx: discord.Interaction, user: str):
     if user_id in CFG["general"]["blocked"]:
         CFG["general"]["blocked"].remove(user_id)
     else:
-        await ctx.response.send_message(f"{user} currently not being vacuum'd!")
+        await ctx.response.send_message(f"<@{user_id}> currently not being vacuum'd!")
         return
 
     with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
         toml.dump(CFG, f)
 
-    await ctx.response.send_message(f"No longer vacuuming {user}!")
+    await ctx.response.send_message(f"No longer vacuuming <@{user_id}>!")
+
+@bot.tree.command(name="version", description="Get Current Version")
+async def version(ctx):
+    CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
+    VER = toml.load(os.path.join("./", "pyproject.toml"))
+    HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
+    if HAS_ACCESS != True:
+        if not ctx.user.guild_permissions.administrator:
+            await ctx.response.send_message(HAS_ACCESS)
+            return
+    await ctx.response.send_message(f'```Current Version: "{VER["tool"]["poetry"]["version"]} - {VER["tool"]["version"]["codename"]}"```')
