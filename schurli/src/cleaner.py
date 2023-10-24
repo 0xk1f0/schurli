@@ -42,12 +42,16 @@ class Vacuum:
 
         return False
 
-    def generate_vacuum_channel(self, channel_list: [], sound_list: []):
+    def random_channel(self, channel_list: []):
         # random index
         random_index_channel = random.randint(0, len(channel_list) - 1)
-        random_index_sound = random.randint(0, len(sound_list) - 1)
         # element at the random index
         random_channel = channel_list[random_index_channel]
+
+        return random_channel
+
+    def random_sound(self, sound_list: []):
+        random_index_sound = random.randint(0, len(sound_list) - 1)
         random_sound = sound_list[random_index_sound]
 
-        return [random_channel, random_sound]
+        return random_sound

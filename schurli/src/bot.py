@@ -4,8 +4,7 @@ import toml
 import re
 from aiohttp import ClientSession, TCPConnector
 from discord import app_commands
-from discord.ext import commands, tasks
-from discord.ext.commands import has_permissions
+from discord.ext import commands
 from schurli.src.helpers import access_check
 from schurli.src.cleaner import Vacuum
 
@@ -54,7 +53,7 @@ async def on_message(message):
     BLOCKED = CFG["general"]["blocked"]
     if message.author.id in BLOCKED:
         await message.channel.delete_messages([message])
-        await message.channel.send(CLEANER.generate_vacuum_channel(CHANNELS, SOUNDS)[1])
+        await message.channel.send(CLEANER.random_sound(SOUNDS))
     if str(message.channel.id) in CHANNELS and len(CHANNELS) > 0 and len(SOUNDS) > 0:
         DO_CLEANING = CLEANER.needs_cleaning(
             message.channel.id,
@@ -64,9 +63,7 @@ async def on_message(message):
         )
         if DO_CLEANING:
             await message.channel.delete_messages([message])
-            await message.channel.send(
-                CLEANER.generate_vacuum_channel(CHANNELS, SOUNDS)[1]
-            )
+            await message.channel.send(CLEANER.random_sound(SOUNDS))
     await bot.process_commands(message)
 
 
@@ -77,6 +74,7 @@ async def on_message(message):
 @app_commands.describe(count="Number of Messages to Purge")
 async def purge_hist(ctx: discord.Interaction, count: int):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
+    SOUNDS = CFG["sounds"]["list"]
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
     if HAS_ACCESS != True:
         if not ctx.user.guild_permissions.administrator:
@@ -84,19 +82,18 @@ async def purge_hist(ctx: discord.Interaction, count: int):
             return
     try:
         # get the history after message id
-        HISTORY = [
-            message async for message in ctx.channel.history(limit=count)
-        ]
+        HISTORY = [message async for message in ctx.channel.history(limit=count)]
         # delete it
-        if HISTORY and len(HISTORY) > 0:
+        if HISTORY and len(HISTORY) > 0 and count > 0:
             await ctx.response.defer()
             await ctx.channel.delete_messages(HISTORY)
+            await ctx.followup.send(
+                f"{CLEANER.random_sound(SOUNDS)} ***{len(HISTORY)}***"
+            )
         else:
             await ctx.response.send_message("***Mh?***")
     except:
         await ctx.followup.send(f"{CFG['general']['err']}")
-    finally:
-        await ctx.followup.send(f"***MMMMMMMMMmmmmmmmmmmmmHHHHHHHHhhhhhhh***: {len(HISTORY)}")
 
 
 ### WHERE TO CLEAN ###
@@ -118,7 +115,7 @@ async def add_trigger(ctx: discord.Interaction, channel: str):
         if channel_id == entry:
             # word exists
             await ctx.response.send_message(
-                f'I am already cleaning Channel: <#{channel_id}>!'
+                f"I am already cleaning Channel: <#{channel_id}>!"
             )
             return
     CFG["channels"]["list"].append(channel_id)
@@ -126,7 +123,7 @@ async def add_trigger(ctx: discord.Interaction, channel: str):
     with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
         toml.dump(CFG, f)
 
-    await ctx.response.send_message(f'I will clean Channel: <#{channel_id}>!')
+    await ctx.response.send_message(f"I will clean Channel: <#{channel_id}>!")
 
 
 @bot.tree.command(name="noclean", description="Stop cleaning this Channel")
@@ -148,11 +145,13 @@ async def remove_trigger(ctx: discord.Interaction, channel: str):
             with open(os.path.join(CFG_PATH, "config.toml"), "w") as f:
                 toml.dump(CFG, f)
             await ctx.response.send_message(
-                f'I will no longer clean Channel: <#{channel_id}>!'
+                f"I will no longer clean Channel: <#{channel_id}>!"
             )
             return
     # word doesnt exist
-    await ctx.response.send_message(f'I do not clean Channel <#{channel_id}> currently!')
+    await ctx.response.send_message(
+        f"I do not clean Channel <#{channel_id}> currently!"
+    )
 
 
 ### CONSTANT USER VACUUMING ###
@@ -207,6 +206,7 @@ async def unblock(ctx: discord.Interaction, user: str):
 
     await ctx.response.send_message(f"No longer vacuuming <@{user_id}>!")
 
+
 @bot.tree.command(name="version", description="Get Current Version")
 async def version(ctx):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
@@ -216,4 +216,6 @@ async def version(ctx):
         if not ctx.user.guild_permissions.administrator:
             await ctx.response.send_message(HAS_ACCESS)
             return
-    await ctx.response.send_message(f'```Current Version: "{VER["tool"]["poetry"]["version"]} - {VER["tool"]["version"]["codename"]}"```')
+    await ctx.response.send_message(
+        f'```Current Version: "{VER["tool"]["poetry"]["version"]} - {VER["tool"]["version"]["codename"]}"```'
+    )
