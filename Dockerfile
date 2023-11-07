@@ -21,4 +21,4 @@ RUN poetry install
 COPY schurli ./schurli
 
 # Start bot
-CMD ["poetry", "run", "dist"]
+CMD ["poetry", "run", "main"]

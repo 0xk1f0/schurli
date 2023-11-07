@@ -14,8 +14,7 @@ python = "^3.11"
 toml = "^0.10.2"
 
 [tool.poetry.scripts]
-dev = "schurli:main"
-dist = "schurli:main"
+main = "schurli:main"
 
 [build-system]
 requires = ["poetry-core"]
