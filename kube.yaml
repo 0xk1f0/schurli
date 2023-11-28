@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: schurli-pod
+  name: schurli-pod
+spec:
+  securityContext:
+    fsGroup: 1000
+    privileged: false
+    readOnlyRootFilesystem: false
+  containers:
+  - env:
+    - name: TZ
+      value: Europe/Vienna
+    image: ghcr.io/0xk1f0/schurli:master
+    name: schurli-bot
+    volumeMounts:
+    - mountPath: /var/lib/schurli/config
+      name: config-0
+  volumes:
+  - hostPath:
+      path: ./config
+      type: DirectoryOrCreate
+    name: config-0
