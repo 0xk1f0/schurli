@@ -159,7 +159,7 @@ async def remove_trigger(ctx: discord.Interaction, channel: str):
 
 @bot.tree.command(name="vacuum", description="Vacuum a user away")
 @app_commands.describe(user="Target User")
-async def block(ctx: discord.Interaction, user: str):
+async def vacuum(ctx: discord.Interaction, user: str):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
     if HAS_ACCESS != True:
@@ -185,7 +185,7 @@ async def block(ctx: discord.Interaction, user: str):
 
 @bot.tree.command(name="unvacuum", description="Don't vacuum a user")
 @app_commands.describe(user="Target User")
-async def unblock(ctx: discord.Interaction, user: str):
+async def unvacuum(ctx: discord.Interaction, user: str):
     CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
     if HAS_ACCESS != True:
@@ -209,13 +209,7 @@ async def unblock(ctx: discord.Interaction, user: str):
 
 @bot.tree.command(name="version", description="Get Current Version")
 async def version(ctx):
-    CFG = toml.load(os.path.join(CFG_PATH, "config.toml"))
     VER = toml.load(os.path.join("./", "pyproject.toml"))
-    HAS_ACCESS = access_check(ctx.user.id, CFG["general"]["superadmins"], True)
-    if HAS_ACCESS != True:
-        if not ctx.user.guild_permissions.administrator:
-            await ctx.response.send_message(HAS_ACCESS)
-            return
     await ctx.response.send_message(
         f'```Current Version: "{VER["tool"]["poetry"]["version"]} - {VER["tool"]["version"]["codename"]}"```'
     )
